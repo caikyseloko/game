@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AI Empire Tycoon</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050810;
+  --bg2: #0a0f1e;
+  --bg3: #0f1628;
+  --panel: #111827;
+  --panel2: #1a2235;
+  --border: #1e3a5f;
+  --accent: #00d4ff;
+  --accent2: #7c3aed;
+  --accent3: #10b981;
+  --accent4: #f59e0b;
+  --accent5: #ef4444;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --glow: 0 0 20px rgba(0,212,255,0.3);
+  --glow2: 0 0 20px rgba(124,58,237,0.3);
+  --glow3: 0 0 20px rgba(16,185,129,0.3);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:16px;}
+body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative;}
+
+/* SCANLINES */
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);pointer-events:none;z-index:9999;}
+
+/* TOP BAR */
+#topbar{background:linear-gradient(135deg,var(--bg3),var(--panel));border-bottom:1px solid var(--border);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;z-index:100;}
+#topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);}
+.game-title{font-family:'Orbitron',monospace;font-size:11px;font-weight:900;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px;}
+.stats-bar{display:flex;gap:10px;align-items:center;}
+.stat-pill{display:flex;align-items:center;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:3px 8px;font-family:'Share Tech Mono',monospace;font-size:10px;}
+.stat-pill .icon{font-size:11px;}
+.stat-pill.money{border-color:rgba(245,158,11,0.4);color:var(--accent4);}
+.stat-pill.rep{border-color:rgba(0,212,255,0.4);color:var(--accent);}
+.stat-pill.energy{border-color:rgba(16,185,129,0.4);color:var(--accent3);}
+.level-badge{font-family:'Orbitron',monospace;font-size:9px;background:linear-gradient(135deg,var(--accent2),#4c1d95);padding:4px 8px;border-radius:4px;font-weight:700;}
+
+/* COMPANY NAME */
+#company-strip{background:var(--bg2);border-bottom:1px solid var(--border);padding:6px 12px;display:flex;align-items:center;justify-content:space-between;}
+#company-name-display{font-family:'Orbitron',monospace;font-size:13px;color:var(--accent);font-weight:700;}
+.company-tier{font-size:10px;color:var(--text2);background:var(--panel);padding:2px 8px;border-radius:10px;border:1px solid var(--border);}
+.income-ticker{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent3);display:flex;align-items:center;gap:4px;}
+.income-ticker.pulse{animation:pulse-green 1s ease-in-out;}
+@keyframes pulse-green{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+/* MAIN CONTENT */
+#main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:80px;}
+#main::-webkit-scrollbar{width:3px;}
+#main::-webkit-scrollbar-track{background:var(--bg);}
+#main::-webkit-scrollbar-thumb{background:var(--accent2);border-radius:3px;}
+
+/* SCREENS */
+.screen{display:none;padding:12px;}
+.screen.active{display:block;}
+
+/* SECTION HEADERS */
+.section-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.section-icon{font-size:20px;}
+.section-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--accent);}
+.section-sub{font-size:11px;color:var(--text3);}
+
+/* CARDS */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden;transition:all 0.2s;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.card.green::before{background:linear-gradient(90deg,var(--accent3),#059669);}
+.card.amber::before{background:linear-gradient(90deg,var(--accent4),#d97706);}
+.card.red::before{background:linear-gradient(90deg,var(--accent5),#dc2626);}
+.card.purple::before{background:linear-gradient(90deg,var(--accent2),#6d28d9);}
+.card:active{transform:scale(0.98);}
+.card-title{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.card-desc{font-size:12px;color:var(--text2);line-height:1.4;margin-bottom:10px;}
+.card-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.tag{font-size:10px;padding:2px 8px;border-radius:10px;border:1px solid;font-family:'Share Tech Mono',monospace;}
+.tag.cyan{color:var(--accent);border-color:rgba(0,212,255,0.3);background:rgba(0,212,255,0.05);}
+.tag.green{color:var(--accent3);border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.05);}
+.tag.amber{color:var(--accent4);border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.05);}
+.tag.red{color:var(--accent5);border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.05);}
+.tag.purple{color:#a78bfa;border-color:rgba(167,139,250,0.3);background:rgba(167,139,250,0.05);}
+
+/* PROGRESS BARS */
+.prog-wrap{margin-bottom:8px;}
+.prog-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px;}
+.prog-track{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;border:1px solid var(--border);}
+.prog-fill{height:100%;border-radius:3px;transition:width 0.5s ease;}
+.prog-fill.cyan{background:linear-gradient(90deg,var(--accent),#0891b2);}
+.prog-fill.green{background:linear-gradient(90deg,var(--accent3),#059669);}
+.prog-fill.amber{background:linear-gradient(90deg,var(--accent4),#d97706);}
+.prog-fill.purple{background:linear-gradient(90deg,var(--accent2),#6d28d9);}
+.prog-fill.red{background:linear-gradient(90deg,var(--accent5),#b91c1c);}
+
+/* BUTTONS */
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-radius:8px;border:none;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;width:100%;}
+.btn:active{transform:scale(0.96);}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#0891b2);color:#000;box-shadow:0 4px 15px rgba(0,212,255,0.3);}
+.btn-secondary{background:linear-gradient(135deg,var(--accent2),#6d28d9);color:#fff;box-shadow:0 4px 15px rgba(124,58,237,0.3);}
+.btn-success{background:linear-gradient(135deg,var(--accent3),#059669);color:#000;box-shadow:0 4px 15px rgba(16,185,129,0.3);}
+.btn-warning{background:linear-gradient(135deg,var(--accent4),#d97706);color:#000;box-shadow:0 4px 15px rgba(245,158,11,0.3);}
+.btn-danger{background:linear-gradient(135deg,var(--accent5),#b91c1c);color:#fff;box-shadow:0 4px 15px rgba(239,68,68,0.3);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2);}
+.btn:disabled{opacity:0.4;pointer-events:none;}
+.btn-sm{padding:6px 12px;font-size:12px;width:auto;}
+.btn-row{display:flex;gap:8px;}
+.btn-row .btn{flex:1;}
+
+/* GRID LAYOUTS */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+
+/* MINI STATS */
+.mini-stat{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
+.mini-stat .val{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;margin-bottom:2px;}
+.mini-stat .lbl{font-size:10px;color:var(--text3);}
+.mini-stat .val.cyan{color:var(--accent);}
+.mini-stat .val.green{color:var(--accent3);}
+.mini-stat .val.amber{color:var(--accent4);}
+.mini-stat .val.purple{color:#a78bfa;}
+
+/* BOTTOM NAV */
+#bottomnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--bg3);border-top:1px solid var(--border);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom);}
+#bottomnav::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;border:none;background:transparent;color:var(--text3);cursor:pointer;transition:all 0.2s;gap:3px;position:relative;}
+.nav-btn.active{color:var(--accent);}
+.nav-btn.active::after{content:'';position:absolute;bottom:0;left:25%;right:25%;height:2px;background:var(--accent);border-radius:2px;}
+.nav-btn .nav-icon{font-size:20px;}
+.nav-btn .nav-label{font-size:9px;font-family:'Orbitron',monospace;letter-spacing:0.5px;}
+.nav-badge{position:absolute;top:6px;right:12px;background:var(--accent5);color:#fff;font-size:9px;padding:1px 5px;border-radius:10px;font-family:'Share Tech Mono',monospace;}
+
+/* NOTIFICATION */
+#notif{position:fixed;top:80px;left:50%;transform:translateX(-50%);max-width:460px;width:calc(100% - 20px);z-index:9000;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.notif-item{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;animation:slideIn 0.3s ease;font-size:13px;pointer-events:all;}
+.notif-item.success{border-color:rgba(16,185,129,0.5);}
+.notif-item.warning{border-color:rgba(245,158,11,0.5);}
+.notif-item.error{border-color:rgba(239,68,68,0.5);}
+.notif-item.info{border-color:rgba(0,212,255,0.5);}
+@keyframes slideIn{from{transform:translateY(-20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+@keyframes slideOut{from{opacity:1;}to{opacity:0;transform:translateX(100%);}}
+
+/* DASHBOARD SPECIFIC */
+.hq-visual{background:linear-gradient(135deg,var(--bg2),var(--panel));border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px;text-align:center;position:relative;overflow:hidden;}
+.hq-visual::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,212,255,0.08) 0%,transparent 70%);}
+.hq-building{font-size:70px;margin-bottom:8px;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+.hq-name{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--accent);margin-bottom:4px;}
+.hq-subtitle{font-size:12px;color:var(--text2);}
+
+/* RESEARCH TREE */
+.research-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.research-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;position:relative;overflow:hidden;}
+.research-card.unlocked{border-color:rgba(16,185,129,0.5);}
+.research-card.active-research{border-color:rgba(0,212,255,0.5);animation:pulse-border 2s infinite;}
+@keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,0.3);}50%{box-shadow:0 0 0 6px rgba(0,212,255,0);}}
+.research-icon{font-size:28px;margin-bottom:6px;display:block;}
+.research-name{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.research-desc{font-size:10px;color:var(--text3);line-height:1.3;margin-bottom:8px;}
+.research-cost{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--accent4);font-family:'Share Tech Mono',monospace;margin-bottom:8px;}
+.research-badge{position:absolute;top:8px;right:8px;font-size:9px;padding:2px 6px;border-radius:8px;}
+.research-badge.done{background:rgba(16,185,129,0.2);color:var(--accent3);border:1px solid rgba(16,185,129,0.3);}
+.research-badge.wip{background:rgba(0,212,255,0.2);color:var(--accent);border:1px solid rgba(0,212,255,0.3);}
+
+/* PRODUCTS */
+.product-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden;}
+.product-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
+.product-icon-wrap{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+.product-info{flex:1;}
+.product-name{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.product-type{font-size:10px;color:var(--text3);}
+.product-revenue{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3);font-weight:700;margin-top:4px;}
+.product-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;}
+.p-stat{text-align:center;background:var(--bg2);border-radius:8px;padding:8px 4px;}
+.p-stat .v{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;}
+.p-stat .l{font-size:9px;color:var(--text3);margin-top:2px;}
+
+/* STAFF */
+.staff-slot{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.staff-avatar{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;border:2px solid var(--border);}
+.staff-info{flex:1;}
+.staff-name{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.staff-role{font-size:10px;color:var(--accent2);}
+.staff-skill{font-size:10px;color:var(--text3);margin-top:3px;}
+.staff-salary{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent5);}
+.staff-empty{border-style:dashed;opacity:0.5;}
+
+/* AI TRAINING */
+.model-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden;}
+.model-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.model-orb{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;position:relative;}
+.model-orb::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid var(--accent);animation:spin 4s linear infinite;}
+.model-orb.purple::after{border-color:var(--accent2);}
+.model-orb.green::after{border-color:var(--accent3);}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.model-name{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--text);}
+.model-version{font-size:10px;color:var(--text3);font-family:'Share Tech Mono',monospace;}
+.model-params{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.param-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center;}
+.param-val{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--accent);}
+.param-lbl{font-size:9px;color:var(--text3);margin-top:2px;}
+
+/* MARKET / NEWS */
+.news-item{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;}
+.news-icon{font-size:22px;flex-shrink:0;margin-top:2px;}
+.news-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.news-body{font-size:11px;color:var(--text2);line-height:1.4;}
+.news-time{font-size:9px;color:var(--text3);margin-top:4px;font-family:'Share Tech Mono',monospace;}
+
+/* RIVALS */
+.rival-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.rival-logo{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.rival-info{flex:1;}
+.rival-name{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--text);}
+.rival-worth{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent4);}
+.rival-bar{height:4px;background:var(--bg2);border-radius:2px;margin-top:6px;overflow:hidden;}
+.rival-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent5),#b91c1c);}
+
+/* ACHIEVEMENTS */
+.achievement{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.ach-icon{font-size:28px;flex-shrink:0;}
+.ach-info{flex:1;}
+.ach-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.ach-desc{font-size:11px;color:var(--text2);}
+.ach-reward{font-size:10px;color:var(--accent4);margin-top:4px;}
+.achievement.locked{opacity:0.4;filter:grayscale(1);}
+
+/* EVENT MODAL */
+#event-modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:5000;padding:20px;}
+#event-modal.show{display:flex;}
+.event-box{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:24px;width:100%;max-width:400px;position:relative;overflow:hidden;animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.event-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));}
+@keyframes popIn{from{transform:scale(0.8);opacity:0;}to{transform:scale(1);opacity:1;}}
+.event-emoji{font-size:56px;text-align:center;margin-bottom:16px;display:block;animation:bounce 0.5s ease;}
+@keyframes bounce{0%,100%{transform:scale(1);}50%{transform:scale(1.2);}}
+.event-title{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--accent);text-align:center;margin-bottom:8px;}
+.event-body{font-size:13px;color:var(--text2);text-align:center;line-height:1.5;margin-bottom:20px;}
+
+/* CHAT SCREEN */
+.chat-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:12px;}
+.chat-header{background:var(--panel);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.chat-ai-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px;}
+.chat-ai-name{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--text);}
+.chat-ai-status{font-size:9px;color:var(--accent3);}
+.chat-messages{padding:12px;display:flex;flex-direction:column;gap:8px;min-height:200px;max-height:300px;overflow-y:auto;}
+.chat-messages::-webkit-scrollbar{width:2px;}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--border);}
+.msg{max-width:85%;padding:8px 12px;border-radius:12px;font-size:12px;line-height:1.4;}
+.msg.ai{background:var(--panel);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px;}
+.msg.user{background:linear-gradient(135deg,var(--accent2),#4c1d95);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
+.msg.typing{color:var(--text3);font-style:italic;}
+.chat-input-wrap{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);background:var(--panel);}
+.chat-input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:13px;outline:none;}
+.chat-input:focus{border-color:var(--accent2);}
+.chat-send{background:linear-gradient(135deg,var(--accent2),#6d28d9);border:none;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0;}
+
+/* IMAGE GEN */
+.imggen-preview{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;min-height:200px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;position:relative;overflow:hidden;margin-bottom:10px;}
+.imggen-art{font-size:80px;animation:float 3s ease-in-out infinite;}
+.imggen-style{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
+.style-btn{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px;text-align:center;cursor:pointer;transition:all 0.2s;font-size:10px;color:var(--text2);}
+.style-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,0.1);}
+.style-btn:active{transform:scale(0.95);}
+.style-icon{font-size:18px;margin-bottom:2px;display:block;}
+
+/* UPGRADE TREE */
+.upgrade-tier{margin-bottom:16px;}
+.tier-label{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-family:'Share Tech Mono',monospace;padding-left:4px;}
+.upgrade-item{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all 0.2s;}
+.upgrade-item:active{transform:scale(0.98);}
+.upgrade-item.owned{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.05);}
+.upgrade-item.locked{opacity:0.35;pointer-events:none;}
+.upg-icon{font-size:22px;flex-shrink:0;}
+.upg-info{flex:1;}
+.upg-name{font-size:12px;font-weight:700;color:var(--text);}
+.upg-desc{font-size:10px;color:var(--text3);}
+.upg-price{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent4);white-space:nowrap;}
+.upg-check{font-size:16px;color:var(--accent3);}
+
+/* MARKET CHART */
+.chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;}
+.chart-title{font-family:'Orbitron',monospace;font-size:10px;color:var(--text2);margin-bottom:8px;}
+.chart-bars{display:flex;align-items:flex-end;gap:4px;height:80px;}
+.chart-bar{flex:1;border-radius:4px 4px 0 0;min-height:4px;transition:height 0.5s ease;}
+.chart-labels{display:flex;gap:4px;margin-top:4px;}
+.chart-label{flex:1;font-size:8px;color:var(--text3);text-align:center;font-family:'Share Tech Mono',monospace;}
+
+/* FLOATING INCOME */
+.float-income{position:fixed;font-family:'Orbitron',monospace;font-size:13px;font-weight:900;color:var(--accent3);pointer-events:none;z-index:8000;animation:floatUp 1.5s ease-out forwards;}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-60px);}}
+
+/* PRESTIGE */
+.prestige-banner{background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(0,212,255,0.1));border:1px solid rgba(124,58,237,0.4);border-radius:12px;padding:14px;margin-bottom:12px;text-align:center;}
+.prestige-title{font-family:'Orbitron',monospace;font-size:14px;font-weight:900;background:linear-gradient(90deg,var(--accent2),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+
+/* LOADING OVERLAY */
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;gap:20px;}
+.loading-logo{font-family:'Orbitron',monospace;font-size:28px;font-weight:900;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:pulse-text 1.5s ease-in-out infinite;}
+@keyframes pulse-text{0%,100%{opacity:1;}50%{opacity:0.5;}}
+.loading-bar-track{width:200px;height:4px;background:var(--panel);border-radius:2px;overflow:hidden;}
+.loading-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;animation:loadAnim 2s ease-in-out forwards;}
+@keyframes loadAnim{from{width:0}to{width:100%}}
+.loading-sub{font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace;}
+
+/* NAME MODAL */
+#name-modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:99998;padding:20px;}
+.name-box{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:400px;text-align:center;}
+.name-box h1{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
+.name-box p{font-size:12px;color:var(--text2);margin-bottom:20px;line-height:1.5;}
+.name-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'Orbitron',monospace;font-size:14px;outline:none;text-align:center;margin-bottom:16px;}
+.name-input:focus{border-color:var(--accent);}
+.founder-label{font-size:10px;color:var(--text3);margin-bottom:6px;}
+.founder-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:13px;outline:none;text-align:center;margin-bottom:20px;}
+.founder-input:focus{border-color:var(--accent2);}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="loading-logo">AI EMPIRE</div>
+  <div class="loading-bar-track"><div class="loading-bar-fill"></div></div>
+  <div class="loading-sub">INICIALIZANDO SISTEMAS...</div>
+</div>
+
+<!-- NAME MODAL -->
+<div id="name-modal" style="display:none;">
+  <div class="name-box">
+    <div style="font-size:60px;margin-bottom:12px;">🤖</div>
+    <h1>AI EMPIRE TYCOON</h1>
+    <p>Construa o maior império de Inteligência Artificial do mundo. Treine modelos, lance produtos e domine o mercado!</p>
+    <div style="font-size:10px;color:var(--text3);margin-bottom:6px;">NOME DA EMPRESA</div>
+    <input type="text" class="name-input" id="company-input" placeholder="Ex: NexusAI Corp" maxlength="20">
+    <div class="founder-label">SEU NOME (FUNDADOR)</div>
+    <input type="text" class="founder-input" id="founder-input" placeholder="Ex: Ana Silva" maxlength="20">
+    <button class="btn btn-primary" onclick="startGame()">🚀 FUNDAR EMPRESA</button>
+  </div>
+</div>
+
+<!-- EVENT MODAL -->
+<div id="event-modal">
+  <div class="event-box">
+    <span class="event-emoji" id="event-emoji">🎉</span>
+    <div class="event-title" id="event-title">EVENTO!</div>
+    <div class="event-body" id="event-body">Algo aconteceu!</div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" id="event-decline" onclick="closeEvent()">❌ Recusar</button>
+      <button class="btn btn-primary btn-sm" id="event-accept" onclick="acceptEvent()">✅ Aceitar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="game-title">AI EMPIRE</div>
+  <div class="stats-bar">
+    <div class="stat-pill money">💰 <span id="money-display">$10K</span></div>
+    <div class="stat-pill rep">⭐ <span id="rep-display">0</span></div>
+    <div class="level-badge">LV<span id="level-display">1</span></div>
+  </div>
+</div>
+
+<!-- COMPANY STRIP -->
+<div id="company-strip">
+  <div id="company-name-display">EMPRESA</div>
+  <div class="income-ticker" id="income-ticker">+$<span id="inc-display">0</span>/s</div>
+  <div class="company-tier" id="tier-display">STARTUP</div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main">
+
+  <!-- DASHBOARD -->
+  <div class="screen active" id="screen-dashboard">
+    <div class="hq-visual">
+      <div class="hq-building" id="hq-emoji">🏢</div>
+      <div class="hq-name" id="hq-company-name">EMPRESA</div>
+      <div class="hq-subtitle" id="hq-subtitle">Fundador: CEO</div>
+      <div style="margin-top:12px;">
+        <div class="prog-wrap">
+          <div class="prog-label"><span>XP para próximo nível</span><span id="xp-label">0/100</span></div>
+          <div class="prog-track"><div class="prog-fill purple" id="xp-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:12px;">
+      <div class="mini-stat">
+        <div class="val cyan" id="dash-products">0</div>
+        <div class="lbl">PRODUTOS ATIVOS</div>
+      </div>
+      <div class="mini-stat">
+        <div class="val green" id="dash-users">0</div>
+        <div class="lbl">USUÁRIOS (M)</div>
+      </div>
+      <div class="mini-stat">
+        <div class="val amber" id="dash-revenue">$0</div>
+        <div class="lbl">RECEITA TOTAL</div>
+      </div>
+      <div class="mini-stat">
+        <div class="val purple" id="dash-models">0</div>
+        <div class="lbl">MODELOS TREINADOS</div>
+      </div>
+    </div>
+
+    <!-- Market Chart -->
+    <div class="chart-wrap">
+      <div class="chart-title">📈 RECEITA DOS ÚLTIMOS 7 DIAS</div>
+      <div class="chart-bars" id="revenue-chart"></div>
+      <div class="chart-labels" id="chart-labels"></div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="section-header">
+      <span class="section-icon">⚡</span>
+      <div><div class="section-title">AÇÕES RÁPIDAS</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎯 MISSÃO DIÁRIA</div>
+      <div class="card-desc" id="daily-mission-desc">Treine seu primeiro modelo de IA para ganhar $5,000 bonus!</div>
+      <div class="prog-wrap">
+        <div class="prog-label"><span id="mission-prog-label">0/1</span><span id="mission-reward-label">+$5,000</span></div>
+        <div class="prog-track"><div class="prog-fill amber" id="mission-bar" style="width:0%"></div></div>
+      </div>
+      <button class="btn btn-warning" id="claim-mission-btn" onclick="claimMission()" disabled>COLETAR RECOMPENSA</button>
+    </div>
+
+    <div class="card amber">
+      <div class="card-title">🏆 RANKING GLOBAL</div>
+      <div class="card-desc">Você está em <strong style="color:var(--accent4)">#<span id="global-rank">999</span></strong> no ranking mundial de empresas de IA.</div>
+      <div class="btn-row">
+        <button class="btn btn-warning btn-sm" onclick="switchTab('market')">VER RIVAIS</button>
+        <button class="btn btn-ghost btn-sm" onclick="switchTab('achievements')">CONQUISTAS</button>
+      </div>
+    </div>
+
+    <!-- Rivals preview -->
+    <div class="section-header">
+      <span class="section-icon">⚔️</span>
+      <div><div class="section-title">COMPETIDORES</div></div>
+    </div>
+    <div id="rivals-preview"></div>
+
+    <div class="card red" style="margin-top:4px;">
+      <div class="card-title">⚠️ AMEAÇA IMINENTE</div>
+      <div class="card-desc" id="threat-text">GigaByte Corp está lançando um novo modelo de linguagem. Acelere sua pesquisa!</div>
+      <button class="btn btn-danger btn-sm" onclick="switchTab('research')" style="width:auto;">PESQUISAR AGORA →</button>
+    </div>
+  </div>
+
+  <!-- RESEARCH -->
+  <div class="screen" id="screen-research">
+    <div class="section-header">
+      <span class="section-icon">🧬</span>
+      <div><div class="section-title">LABORATÓRIO DE PESQUISA</div><div class="section-sub">Desenvolva tecnologias avançadas</div></div>
+    </div>
+
+    <!-- Active research -->
+    <div id="active-research-card" style="display:none;" class="card">
+      <div class="card-title">🔬 PESQUISA EM ANDAMENTO</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span style="font-size:28px;" id="active-research-icon">🧪</span>
+        <div>
+          <div style="font-family:'Orbitron',monospace;font-size:12px;font-weight:700;" id="active-research-name">-</div>
+          <div style="font-size:10px;color:var(--text2);">Tempo restante: <span id="active-research-time" style="color:var(--accent);font-family:'Share Tech Mono',monospace;">-</span></div>
+        </div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label"><span>Progresso</span><span id="active-research-pct">0%</span></div>
+        <div class="prog-track"><div class="prog-fill cyan" id="active-research-bar" style="width:0%"></div></div>
+      </div>
+      <button class="btn btn-danger btn-sm" style="width:auto;" onclick="cancelResearch()">✕ Cancelar</button>
+    </div>
+
+    <div class="research-grid" id="research-grid"></div>
+  </div>
+
+  <!-- PRODUCTS -->
+  <div class="screen" id="screen-products">
+    <div class="section-header">
+      <span class="section-icon">📦</span>
+      <div><div class="section-title">PRODUTOS & SERVIÇOS</div><div class="section-sub">Lance produtos para gerar receita</div></div>
+    </div>
+
+    <div id="products-list"></div>
+
+    <div class="section-header" style="margin-top:16px;">
+      <span class="section-icon">🔒</span>
+      <div><div class="section-title">NOVOS PRODUTOS</div><div class="section-sub">Desbloqueie via pesquisa</div></div>
+    </div>
+    <div id="locked-products-list"></div>
+  </div>
+
+  <!-- AI TRAINING -->
+  <div class="screen" id="screen-ai">
+    <div class="section-header">
+      <span class="section-icon">🤖</span>
+      <div><div class="section-title">TREINAR MODELOS DE IA</div><div class="section-sub">Evolua seus modelos de linguagem e visão</div></div>
+    </div>
+
+    <!-- Chat AI Demo -->
+    <div class="card purple" style="margin-bottom:14px;">
+      <div class="card-title">💬 DEMO: CHAT COM SEU AI</div>
+      <div class="chat-wrap">
+        <div class="chat-header">
+          <div class="chat-ai-avatar">🤖</div>
+          <div>
+            <div class="chat-ai-name" id="chat-model-name">NEXUS-1</div>
+            <div class="chat-ai-status">● Online · Modelo v<span id="chat-model-ver">1.0</span></div>
+          </div>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+          <div class="msg ai">Olá! Sou seu assistente de IA. Treine-me para melhorar minhas respostas! Como posso ajudar?</div>
+        </div>
+        <div class="chat-input-wrap">
+          <input class="chat-input" id="chat-input" placeholder="Envie uma mensagem..." maxlength="100">
+          <button class="chat-send" onclick="sendChatMsg()">➤</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+        <div style="font-size:10px;color:var(--text3);">Inteligência do modelo:</div>
+        <div style="font-family:'Orbitron',monospace;font-size:12px;color:var(--accent2);" id="chat-iq">IQ: 42</div>
+      </div>
+      <div class="prog-wrap" style="margin-top:4px;">
+        <div class="prog-track"><div class="prog-fill purple" id="model-iq-bar" style="width:4%"></div></div>
+      </div>
+    </div>
+
+    <!-- Image Generator Demo -->
+    <div class="card" style="margin-bottom:14px;">
+      <div class="card-title">🎨 DEMO: GERADOR DE IMAGENS</div>
+      <div class="imggen-preview" id="imggen-preview">
+        <div class="imggen-art" id="imggen-display">🖼️</div>
+        <div style="font-size:11px;color:var(--text3);" id="imggen-label">Selecione um estilo e gere!</div>
+      </div>
+      <div class="imggen-style">
+        <div class="style-btn active" onclick="setImgStyle(this,'🌆','Cyberpunk')"><span class="style-icon">🌆</span>Cyberpunk</div>
+        <div class="style-btn" onclick="setImgStyle(this,'🌸','Anime')"><span class="style-icon">🌸</span>Anime</div>
+        <div class="style-btn" onclick="setImgStyle(this,'🏔️','Realista')"><span class="style-icon">🏔️</span>Realista</div>
+        <div class="style-btn" onclick="setImgStyle(this,'🎭','Arte')"><span class="style-icon">🎭</span>Arte</div>
+        <div class="style-btn" onclick="setImgStyle(this,'👾','Pixel')"><span class="style-icon">👾</span>Pixel Art</div>
+        <div class="style-btn" onclick="setImgStyle(this,'🚀','SciFi')"><span class="style-icon">🚀</span>Sci-Fi</div>
+      </div>
+      <button class="btn btn-secondary" onclick="generateImage()" id="gen-img-btn">🎨 GERAR IMAGEM (-$500)</button>
+    </div>
+
+    <!-- Models -->
+    <div class="section-header">
+      <span class="section-icon">🧠</span>
+      <div><div class="section-title">SEUS MODELOS</div></div>
+    </div>
+    <div id="models-list"></div>
+  </div>
+
+  <!-- OFFICE -->
+  <div class="screen" id="screen-office">
+    <div class="section-header">
+      <span class="section-icon">🏢</span>
+      <div><div class="section-title">ESCRITÓRIO & EQUIPE</div><div class="section-sub">Gerencie sua empresa</div></div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:12px;">
+      <div class="mini-stat">
+        <div class="val cyan" id="staff-count">0</div>
+        <div class="lbl">FUNCIONÁRIOS</div>
+      </div>
+      <div class="mini-stat">
+        <div class="val red" id="monthly-costs">$0</div>
+        <div class="lbl">CUSTO MENSAL</div>
+      </div>
+    </div>
+
+    <!-- Office upgrade -->
+    <div class="card amber">
+      <div class="card-title">🏗️ SEDE</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <span style="font-size:36px;" id="office-icon">🏠</span>
+        <div>
+          <div style="font-family:'Orbitron',monospace;font-size:13px;color:var(--accent4);" id="office-name">Garagem</div>
+          <div style="font-size:11px;color:var(--text2);" id="office-desc">Capacidade: 3 funcionários</div>
+        </div>
+      </div>
+      <button class="btn btn-warning" id="upgrade-office-btn" onclick="upgradeOffice()">⬆️ EXPANDIR SEDE</button>
+    </div>
+
+    <!-- Staff slots -->
+    <div class="section-header">
+      <span class="section-icon">👥</span>
+      <div><div class="section-title">EQUIPE</div></div>
+    </div>
+    <div id="staff-list"></div>
+
+    <!-- Available hires -->
+    <div class="section-header" style="margin-top:16px;">
+      <span class="section-icon">📋</span>
+      <div><div class="section-title">CONTRATAR</div></div>
+    </div>
+    <div id="hire-list"></div>
+
+    <!-- Upgrades -->
+    <div class="section-header" style="margin-top:16px;">
+      <span class="section-icon">⬆️</span>
+      <div><div class="section-title">MELHORIAS</div></div>
+    </div>
+    <div id="upgrade-list"></div>
+  </div>
+
+  <!-- MARKET -->
+  <div class="screen" id="screen-market">
+    <div class="section-header">
+      <span class="section-icon">📊</span>
+      <div><div class="section-title">MERCADO & RIVAIS</div><div class="section-sub">Analise a concorrência</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📈 PARTICIPAÇÃO DE MERCADO</div>
+      <div id="market-share-display"></div>
+    </div>
+
+    <div class="section-header">
+      <span class="section-icon">🏢</span>
+      <div><div class="section-title">EMPRESAS RIVAIS</div></div>
+    </div>
+    <div id="rivals-full"></div>
+
+    <div class="section-header" style="margin-top:16px;">
+      <span class="section-icon">📰</span>
+      <div><div class="section-title">NOTÍCIAS DO SETOR</div></div>
+    </div>
+    <div id="news-list"></div>
+  </div>
+
+  <!-- ACHIEVEMENTS -->
+  <div class="screen" id="screen-achievements">
+    <div class="section-header">
+      <span class="section-icon">🏆</span>
+      <div><div class="section-title">CONQUISTAS</div><div class="section-sub">Desbloqueie recompensas</div></div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:12px;">
+      <div class="mini-stat">
+        <div class="val amber" id="ach-count">0</div>
+        <div class="lbl">CONQUISTADAS</div>
+      </div>
+      <div class="mini-stat">
+        <div class="val purple">12</div>
+        <div class="lbl">TOTAL</div>
+      </div>
+    </div>
+
+    <div class="prestige-banner">
+      <div class="prestige-title">⭐ PRESTÍGIO</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px;">Reinicie com bônus permanentes! Requer nível 10 e $1M.</div>
+      <button class="btn btn-secondary btn-sm" style="width:auto;margin:0 auto;" id="prestige-btn" onclick="tryPrestige()">✨ PRESTÍGIO AGORA</button>
+    </div>
+
+    <div id="achievements-list"></div>
+  </div>
+
+</div><!-- end main -->
+
+<!-- BOTTOM NAV -->
+<div id="bottomnav">
+  <button class="nav-btn active" onclick="switchTab('dashboard')">
+    <span class="nav-icon">🏠</span><span class="nav-label">HQ</span>
+  </button>
+  <button class="nav-btn" onclick="switchTab('research')">
+    <span class="nav-icon">🔬</span><span class="nav-label">LAB</span>
+    <span class="nav-badge" id="research-badge" style="display:none;">!</span>
+  </button>
+  <button class="nav-btn" onclick="switchTab('products')">
+    <span class="nav-icon">📦</span><span class="nav-label">PRODUTOS</span>
+  </button>
+  <button class="nav-btn" onclick="switchTab('ai')">
+    <span class="nav-icon">🤖</span><span class="nav-label">AI</span>
+  </button>
+  <button class="nav-btn" onclick="switchTab('office')">
+    <span class="nav-icon">🏢</span><span class="nav-label">ESCRITÓRIO</span>
+  </button>
+  <button class="nav-btn" onclick="switchTab('market')">
+    <span class="nav-icon">📊</span><span class="nav-label">MERCADO</span>
+  </button>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div id="notif"></div>
+
+<script>
+// ===========================
+// GAME STATE
+// ===========================
+let G = {
+  money: 10000,
+  rep: 0,
+  xp: 0,
+  level: 1,
+  xpNeeded: 100,
+  income: 0,
+  totalRevenue: 0,
+  founder: 'CEO',
+  companyName: 'Empresa',
+  tick: 0,
+  prestige: 0,
+  prestigeBonus: 1,
+  missionDone: false,
+  missionClaimed: false,
+  missionType: 'train',
+  globalRank: 999,
+  
+  research: {
+    active: null,
+    progress: 0,
+    done: []
+  },
+  
+  staff: [],
+  products: [],
+  upgrades: [],
+  models: [],
+  
+  stats: {
+    trainingPower: 1,
+    researchSpeed: 1,
+    productBonus: 1,
+    maxStaff: 3,
+    officeLevel: 0
+  },
+  
+  revenueHistory: [0,0,0,0,0,0,0],
+  aiModels: {
+    chat: { level: 1, iq: 42, trained: 0 },
+    image: { level: 0, quality: 0, trained: 0 },
+    voice: { level: 0, accuracy: 0, trained: 0 }
+  },
+  
+  imgStyle: { icon: '🌆', name: 'Cyberpunk' },
+  generatedImages: 0,
+  chatMessages: 0,
+  
+  events: {
+    pending: null
+  }
+};
+
+// ===========================
+// DATA TABLES
+// ===========================
+const RESEARCH_TREE = [
+  { id: 'nlp_basic', name: 'NLP Básico', icon: '💬', desc: 'Habilita chatbots com respostas inteligentes', cost: 5000, time: 30, effect: 'chat_v1', req: [] },
+  { id: 'img_gen', name: 'Geração de Imagens', icon: '🎨', desc: 'Crie imagens com IA generativa', cost: 8000, time: 45, effect: 'image_v1', req: [] },
+  { id: 'scale_compute', name: 'Computação Escalável', icon: '⚡', desc: '+50% velocidade de pesquisa', cost: 12000, time: 60, effect: 'research_speed', req: ['nlp_basic'] },
+  { id: 'nlp_advanced', name: 'NLP Avançado', icon: '🧠', desc: 'Chatbot de alta qualidade (GPT-nível)', cost: 20000, time: 90, effect: 'chat_v2', req: ['nlp_basic', 'scale_compute'] },
+  { id: 'diffusion', name: 'Diffusion Models', icon: '🌈', desc: 'Imagens foto-realistas em HD', cost: 25000, time: 120, effect: 'image_v2', req: ['img_gen'] },
+  { id: 'voice_ai', name: 'Síntese de Voz', icon: '🎙️', desc: 'Text-to-speech e voice cloning', cost: 18000, time: 75, effect: 'voice_v1', req: ['nlp_basic'] },
+  { id: 'multimodal', name: 'IA Multimodal', icon: '🔮', desc: 'Combina texto, imagem e voz', cost: 50000, time: 180, effect: 'multi_v1', req: ['nlp_advanced', 'diffusion'] },
+  { id: 'agi_research', name: 'Pesquisa AGI', icon: '🌟', desc: 'O Santo Graal da IA. +500% receita', cost: 200000, time: 600, effect: 'agi', req: ['multimodal', 'voice_ai'] },
+];
+
+const PRODUCTS_DATA = [
+  { id: 'chatbot_basic', name: 'ChatAI Basic', icon: '💬', bg: 'linear-gradient(135deg,#1e3a5f,#0f2040)', type: 'Chat', baseIncome: 10, req: 'nlp_basic', users: 1000, desc: 'Chatbot para atendimento ao cliente' },
+  { id: 'image_api', name: 'ImageGen API', icon: '🎨', bg: 'linear-gradient(135deg,#3b1f6e,#1a0a30)', type: 'Imagem', baseIncome: 15, req: 'img_gen', users: 500, desc: 'API de geração de imagens por IA' },
+  { id: 'chatbot_pro', name: 'ChatAI Pro', icon: '🤖', bg: 'linear-gradient(135deg,#0a3d2e,#051e15)', type: 'Chat', baseIncome: 40, req: 'nlp_advanced', users: 5000, desc: 'Assistente avançado de IA conversacional' },
+  { id: 'image_hd', name: 'ArtForge HD', icon: '🖼️', bg: 'linear-gradient(135deg,#3d1a00,#200d00)', type: 'Imagem', baseIncome: 50, req: 'diffusion', users: 3000, desc: 'Geração de arte em altíssima qualidade' },
+  { id: 'voice_clone', name: 'VoiceClone', icon: '🎙️', bg: 'linear-gradient(135deg,#1a1a3e,#0a0a1e)', type: 'Voz', baseIncome: 35, req: 'voice_ai', users: 2000, desc: 'Clone de voz e text-to-speech' },
+  { id: 'ai_suite', name: 'AI Suite Enterprise', icon: '🔮', bg: 'linear-gradient(135deg,#3d0a3d,#1a051a)', type: 'Multimodal', baseIncome: 150, req: 'multimodal', users: 20000, desc: 'Suite completa de IA para empresas' },
+  { id: 'agi_platform', name: 'AGI Platform', icon: '🌟', bg: 'linear-gradient(135deg,#3d3d00,#1a1a00)', type: 'AGI', baseIncome: 1000, req: 'agi_research', users: 500000, desc: 'Plataforma de Inteligência Geral Artificial' },
+];
+
+const STAFF_DATA = [
+  { id: 'dev1', name: 'Lucas Mendes', role: 'Engenheiro Jr.', icon: '👨‍💻', salary: 3000, bonus: { income: 0.05 } },
+  { id: 'res1', name: 'Dra. Ana Costa', role: 'Pesquisadora IA', icon: '👩‍🔬', salary: 5000, bonus: { research: 0.2 } },
+  { id: 'mkt1', name: 'Carlos Lima', role: 'Marketing', icon: '📣', salary: 2500, bonus: { users: 0.1 } },
+  { id: 'dev2', name: 'Sofia Tech', role: 'Engenheira Sr.', icon: '👩‍💻', salary: 6000, bonus: { income: 0.15 } },
+  { id: 'cto1', name: 'Dr. Rafael', role: 'CTO', icon: '🧑‍🦱', salary: 10000, bonus: { research: 0.4, income: 0.1 } },
+  { id: 'cfo1', name: 'Patricia F.', role: 'CFO', icon: '👩‍💼', salary: 8000, bonus: { income: 0.2 } },
+  { id: 'data1', name: 'Yuki Tanaka', role: 'Data Scientist', icon: '📊', salary: 7000, bonus: { training: 0.3 } },
+  { id: 'sec1', name: 'Marco Segura', role: 'Segurança IA', icon: '🛡️', salary: 6500, bonus: { rep: 0.2 } },
+];
+
+const UPGRADES_DATA = [
+  { id: 'gpu_farm', name: 'Fazenda de GPUs', icon: '🖥️', desc: '+100% poder de treinamento', cost: 15000, effect: 'training_2x', owned: false, req: [] },
+  { id: 'cloud_infra', name: 'Infraestrutura Cloud', icon: '☁️', desc: '+30% receita de produtos', cost: 25000, effect: 'income_1.3', owned: false, req: [] },
+  { id: 'ai_chip', name: 'Chip de IA Proprietário', icon: '💾', desc: '+200% poder de treinamento', cost: 80000, effect: 'training_3x', owned: false, req: ['gpu_farm'] },
+  { id: 'quantum', name: 'Computação Quântica', icon: '⚛️', desc: '+500% velocidade de pesquisa', cost: 150000, effect: 'research_6x', owned: false, req: ['cloud_infra'] },
+  { id: 'data_center', name: 'Data Center Global', icon: '🌐', desc: '+200% receita de produtos', cost: 200000, effect: 'income_3x', owned: false, req: ['cloud_infra'] },
+];
+
+const OFFICES = [
+  { name: 'Garagem', icon: '🏠', cap: 3, cost: 0, desc: 'Capacidade: 3 funcionários' },
+  { name: 'Coworking', icon: '🏪', cap: 5, cost: 20000, desc: 'Capacidade: 5 funcionários' },
+  { name: 'Escritório Pequeno', icon: '🏢', cap: 8, cost: 60000, desc: 'Capacidade: 8 funcionários' },
+  { name: 'Escritório Médio', icon: '🏬', cap: 15, cost: 150000, desc: 'Capacidade: 15 funcionários' },
+  { name: 'Sede Corporativa', icon: '🏙️', cap: 30, cost: 500000, desc: 'Capacidade: 30 funcionários' },
+  { name: 'Campus Global', icon: '🌆', cap: 100, cost: 2000000, desc: 'Capacidade: ilimitada' },
+];
+
+const ACHIEVEMENTS = [
+  { id: 'first_product', name: 'Primeiro Produto', icon: '📦', desc: 'Lance seu primeiro produto de IA', reward: 5000, done: false },
+  { id: 'first_staff', name: 'Primeiro Funcionário', icon: '👥', desc: 'Contrate seu primeiro funcionário', reward: 2000, done: false },
+  { id: 'millionaire', name: 'Milionário', icon: '💰', desc: 'Acumule $1,000,000', reward: 50000, done: false },
+  { id: 'train_model', name: 'Treinador de IA', icon: '🤖', desc: 'Treine seu primeiro modelo de IA', reward: 5000, done: false },
+  { id: 'five_products', name: 'Portfólio Completo', icon: '🎯', desc: 'Lance 5 produtos diferentes', reward: 25000, done: false },
+  { id: 'agi_unlock', name: 'AGI Desbloqueado', icon: '🌟', desc: 'Complete a pesquisa AGI', reward: 500000, done: false },
+  { id: 'level_5', name: 'Veterano', icon: '⭐', desc: 'Alcance o nível 5', reward: 10000, done: false },
+  { id: 'level_10', name: 'Mestre', icon: '👑', desc: 'Alcance o nível 10', reward: 100000, done: false },
+  { id: 'generate_images', name: 'Artista Digital', icon: '🎨', desc: 'Gere 10 imagens com IA', reward: 3000, done: false },
+  { id: 'chat_100', name: 'Conversador', icon: '💬', desc: 'Envie 100 mensagens ao seu AI', reward: 3000, done: false },
+  { id: 'full_staff', name: 'Grande Equipe', icon: '🏢', desc: 'Tenha 5 funcionários simultâneos', reward: 20000, done: false },
+  { id: 'prestige_1', name: 'Renascer', icon: '✨', desc: 'Complete um Prestígio', reward: 200000, done: false },
+];
+
+const RIVALS = [
+  { name: 'GigaByte Corp', icon: '🔵', worth: 500000, power: 45, color: '#3b82f6' },
+  { name: 'MindForge AI', icon: '🟣', worth: 250000, power: 30, color: '#8b5cf6' },
+  { name: 'DataNexus Inc', icon: '🟢', worth: 1000000, power: 70, color: '#10b981' },
+  { name: 'QuantumMind', icon: '🔴', worth: 2000000, power: 90, color: '#ef4444' },
+];
+
+const CHAT_RESPONSES = {
+  low: [
+    "Processando... 01001000 01101001",
+    "Desculpe, minha inteligência ainda é limitada. Treine-me mais!",
+    "Erro 404: resposta inteligente não encontrada. 🤖",
+    "Hmm... dados insuficientes. Preciso de mais treinamento!",
+    "Beep boop. Tentando entender sua mensagem...",
+    "Minha matriz neural ainda está calibrando. Treine mais!",
+  ],
+  mid: [
+    "Interessante pergunta! Baseado nos meus dados de treinamento, posso dizer que essa é uma área fascinante.",
+    "Meu processamento indica múltiplas possibilidades. Vou analisar os padrões...",
+    "Excelente! Meus algoritmos identificaram o contexto da sua mensagem.",
+    "Com base na minha base de conhecimento atual, posso oferecer insights preliminares.",
+    "Processando com 78% de eficiência. Minha resposta: isso é muito interessante!",
+    "Meus modelos de linguagem estão avançando! Em breve terei respostas ainda melhores.",
+  ],
+  high: [
+    "Análise completa! Posso fornecer uma resposta contextualmente rica e multimodal.",
+    "Excelente input! Minha rede neural de 175B parâmetros processou sua mensagem com 99.8% de precisão.",
+    "Fascinante! Após análise profunda, identifico padrões complexos que revelam nuances importantes.",
+    "Como um modelo de linguagem avançado, posso gerar texto, analisar imagens e sintetizar voz simultaneamente.",
+    "Meu sistema de IA multimodal integrado responde: a solução ótima envolve múltiplas dimensões de análise.",
+    "Baseado em trilhões de tokens de treinamento, minha resposta é calibrada com precisão quântica.",
+  ]
+};
+
+const IMG_RESPONSES = [
+  ['🌆','🌇','🏙️','🌃','🌉'],
+  ['🌸','🌺','🦋','🎎','⛩️'],
+  ['🏔️','🌊','🌄','🦁','🦅'],
+  ['🎭','🖼️','🎪','🎨','🎠'],
+  ['👾','🕹️','💾','👻','🎮'],
+  ['🚀','🛸','⭐','🪐','🌌'],
+];
+
+const NEWS_ITEMS = [
+  { icon: '📰', title: 'IA supera humanos em benchmark de raciocínio', body: 'Um novo modelo de IA alcançou pontuação record nos testes de raciocínio lógico.', time: '2h atrás' },
+  { icon: '💰', title: 'Investimentos em IA batem $500B globalmente', body: 'O mercado de inteligência artificial continua crescendo exponencialmente.', time: '5h atrás' },
+  { icon: '⚖️', title: 'Regulamentação de IA ganha força no congresso', body: 'Novos projetos de lei podem impactar como empresas de IA operam.', time: '1d atrás' },
+  { icon: '🔬', title: 'Novo avanço em diffusion models', body: 'Pesquisadores desenvolveram técnica que reduz custo de geração em 80%.', time: '2d atrás' },
+  { icon: '🤝', title: 'Gigante tech anuncia parceria com startup de IA', body: 'Acordo de $10B pode remodelar o setor de inteligência artificial.', time: '3d atrás' },
+  { icon: '⚡', title: 'Chips quânticos prometem revolução no treinamento', body: 'Nova geração de processadores pode treinar LLMs em horas.', time: '4d atrás' },
+];
+
+const EVENTS = [
+  { emoji: '💰', title: 'OFERTA DE INVESTIMENTO!', body: 'Um venture capitalist quer investir $50,000 na sua empresa em troca de 10% de participação!', accept: () => { G.money += 50000; showNotif('Investimento recebido! +$50,000 💰', 'success'); }, decline: () => { showNotif('Oferta recusada. Mantendo controle total.', 'info'); }, acceptLabel: '✅ Aceitar $50K', declineLabel: '❌ Recusar' },
+  { emoji: '🐛', title: 'BUG CRÍTICO DETECTADO!', body: 'Um bug severo foi encontrado nos seus sistemas. Pague $8,000 para corrigir ou perca 30% dos usuários!', accept: () => { G.money -= 8000; showNotif('Bug corrigido! -$8,000 🔧', 'warning'); }, decline: () => { G.products.forEach(p => p.users = Math.floor(p.users * 0.7)); showNotif('Usuários perdidos! -30% 😱', 'error'); recalcIncome(); }, acceptLabel: '🔧 Pagar $8K', declineLabel: '❌ Ignorar' },
+  { emoji: '📰', title: 'MATÉRIA VIRAL!', body: 'Um jornalista de tech escreveu sobre sua empresa! +500 reputação e +20% de usuários por 24h!', accept: () => { G.rep += 500; showNotif('Matéria publicada! +500 rep ⭐', 'success'); addXP(200); }, decline: () => { showNotif('Entrevista recusada.', 'info'); }, acceptLabel: '📰 Aceitar entrevista', declineLabel: '❌ Recusar' },
+  { emoji: '⚡', title: 'QUEDA DE ENERGIA!', body: 'Os servidores sofreram uma queda de energia! Pague $5,000 para manutenção emergencial.', accept: () => { G.money -= 5000; showNotif('Servidores restaurados! -$5,000', 'warning'); }, decline: () => { G.income *= 0.5; setTimeout(() => recalcIncome(), 30000); showNotif('Servidores instáveis! Receita -50% por 30s', 'error'); }, acceptLabel: '🔧 Pagar $5K', declineLabel: '❌ Arriscar' },
+  { emoji: '🤝', title: 'PROPOSTA DE PARCERIA!', body: 'DataCloud Corp quer fazer parceria. Pague $10,000 para acesso à infraestrutura premium.', accept: () => { G.money -= 10000; G.income *= 1.4; showNotif('Parceria ativa! Receita +40% 🚀', 'success'); recalcIncome(); }, decline: () => { showNotif('Parceria recusada.', 'info'); }, acceptLabel: '🤝 Aceitar', declineLabel: '❌ Recusar' },
+  { emoji: '🏆', title: 'PRÊMIO DE INOVAÇÃO!', body: 'Sua empresa ganhou o Prêmio de IA Inovadora! +$15,000 e +300 reputação!', accept: () => { G.money += 15000; G.rep += 300; addXP(300); showNotif('Prêmio recebido! +$15K +300 rep 🏆', 'success'); }, decline: null, acceptLabel: '🎉 Receber!', declineLabel: null },
+];
+
+// ===========================
+// GAME INIT
+// ===========================
+let currentTab = 'dashboard';
+let currentEvent = null;
+let gameInterval = null;
+
+function startGame() {
+  const cn = document.getElementById('company-input').value.trim() || 'NexusAI Corp';
+  const fn = document.getElementById('founder-input').value.trim() || 'CEO';
+  G.companyName = cn;
+  G.founder = fn;
+  document.getElementById('name-modal').style.display = 'none';
+  initUI();
+  startGameLoop();
+  showNotif(`Bem-vindo, ${fn}! ${cn} está aberta para negócios! 🚀`, 'success');
+  setTimeout(() => showEvent(), 60000);
+}
+
+function initUI() {
+  document.getElementById('company-name-display').textContent = G.companyName;
+  document.getElementById('hq-company-name').textContent = G.companyName;
+  document.getElementById('hq-subtitle').textContent = `Fundador: ${G.founder}`;
+  renderAll();
+}
+
+function startGameLoop() {
+  gameInterval = setInterval(gameTick, 1000);
+}
+
+function gameTick() {
+  G.tick++;
+
+  // Income
+  let income = G.income;
+  if (income > 0) {
+    G.money += income;
+    G.totalRevenue += income;
+    if (Math.random() < 0.1) showFloatingIncome(income);
+  }
+
+  // Research progress
+  if (G.research.active) {
+    const r = RESEARCH_TREE.find(x => x.id === G.research.active);
+    if (r) {
+      const spd = G.stats.researchSpeed;
+      G.research.progress += (1 * spd);
+      if (G.research.progress >= r.time) {
+        completeResearch(r);
+      }
+    }
+  }
+
+  // Rival growth
+  if (G.tick % 30 === 0) {
+    RIVALS.forEach(r => { r.worth = Math.floor(r.worth * 1.02); r.power = Math.min(100, r.power + 0.5); });
+  }
+
+  // Revenue history (every minute)
+  if (G.tick % 60 === 0) {
+    G.revenueHistory.push(Math.floor(G.income * 60));
+    G.revenueHistory.shift();
+    updateRank();
+  }
+
+  // Random events
+  if (G.tick % 120 === 0 && !currentEvent) {
+    if (Math.random() < 0.3) showEvent();
+  }
+
+  // Staff salaries (every 60s)
+  if (G.tick % 60 === 0) {
+    const totalSalary = G.staff.reduce((s, id) => {
+      const emp = STAFF_DATA.find(x => x.id === id);
+      return s + (emp ? emp.salary / 60 : 0);
+    }, 0);
+    G.money -= totalSalary;
+  }
+
+  // Check achievements
+  checkAchievements();
+  updateUI();
+}
+
+function recalcIncome() {
+  let base = 0;
+  G.products.forEach(pid => {
+    const p = PRODUCTS_DATA.find(x => x.id === pid);
+    if (p) base += p.baseIncome;
+  });
+  
+  // Staff bonuses
+  let incBonus = 1.0;
+  G.staff.forEach(sid => {
+    const s = STAFF_DATA.find(x => x.id === sid);
+    if (s && s.bonus.income) incBonus += s.bonus.income;
+  });
+  
+  // Upgrade bonuses
+  if (G.upgrades.includes('cloud_infra')) incBonus += 0.3;
+  if (G.upgrades.includes('data_center')) incBonus += 2.0;
+  
+  // Prestige
+  incBonus *= G.prestigeBonus;
+  
+  G.income = base * incBonus;
+}
+
+function updateRank() {
+  const score = G.totalRevenue + G.rep * 100;
+  G.globalRank = Math.max(1, Math.floor(9999 / (1 + score / 50000)));
+}
+
+// ===========================
+// RESEARCH
+// ===========================
+function startResearch(id) {
+  if (G.research.active) { showNotif('Já há uma pesquisa em andamento!', 'error'); return; }
+  const r = RESEARCH_TREE.find(x => x.id === id);
+  if (!r) return;
+  if (G.money < r.cost) { showNotif(`Sem fundos! Precisa de $${fmtNum(r.cost)}`, 'error'); return; }
+  if (G.research.done.includes(id)) { showNotif('Já pesquisado!', 'info'); return; }
+  const reqs = r.req.filter(rq => !G.research.done.includes(rq));
+  if (reqs.length > 0) { showNotif('Requisitos não atendidos!', 'error'); return; }
+  G.money -= r.cost;
+  G.research.active = id;
+  G.research.progress = 0;
+  showNotif(`Iniciando pesquisa: ${r.name}`, 'info');
+  renderResearch();
+}
+
+function completeResearch(r) {
+  G.research.done.push(r.id);
+  G.research.active = null;
+  G.research.progress = 0;
+  applyResearchEffect(r.effect, r);
+  showNotif(`✅ Pesquisa concluída: ${r.name}!`, 'success');
+  addXP(100);
+  checkAchievements();
+  renderAll();
+}
+
+function cancelResearch() {
+  G.research.active = null;
+  G.research.progress = 0;
+  showNotif('Pesquisa cancelada.', 'warning');
+  renderResearch();
+}
+
+function applyResearchEffect(effect) {
+  if (effect === 'research_speed') G.stats.researchSpeed += 0.5;
+  if (effect === 'research_6x') G.stats.researchSpeed += 5;
+  if (effect === 'training_2x') G.stats.trainingPower *= 2;
+  if (effect === 'training_3x') G.stats.trainingPower *= 3;
+}
+
+// ===========================
+// PRODUCTS
+// ===========================
+function launchProduct(id) {
+  const p = PRODUCTS_DATA.find(x => x.id === id);
+  if (!p) return;
+  if (G.products.includes(id)) { showNotif('Produto já lançado!', 'info'); return; }
+  if (!G.research.done.includes(p.req)) { showNotif('Pesquisa necessária!', 'error'); return; }
+  G.products.push(id);
+  recalcIncome();
+  addXP(150);
+  showNotif(`🚀 ${p.name} lançado! +$${p.baseIncome}/s`, 'success');
+  if (G.products.length === 1 && G.missionType === 'product') {
+    G.missionDone = true;
+    document.getElementById('claim-mission-btn').disabled = false;
+  }
+  checkAchievements();
+  renderProducts();
+}
+
+function upgradeProduct(id) {
+  const p = PRODUCTS_DATA.find(x => x.id === id);
+  if (!p) return;
+  const upgCost = p.baseIncome * 100;
+  if (G.money < upgCost) { showNotif('Sem fundos!', 'error'); return; }
+  G.money -= upgCost;
+  p.baseIncome = Math.floor(p.baseIncome * 1.5);
+  p.users = Math.floor(p.users * 1.3);
+  recalcIncome();
+  showNotif(`⬆️ ${p.name} melhorado! Receita +50%`, 'success');
+  renderProducts();
+}
+
+// ===========================
+// AI MODELS
+// ===========================
+function trainModel(type) {
+  const costs = { chat: 3000, image: 5000, voice: 4000 };
+  const model = G.aiModels[type];
+  const cost = costs[type] * (model.level + 1);
+  if (G.money < cost) { showNotif(`Sem fundos! Precisa de $${fmtNum(cost)}`, 'error'); return; }
+  G.money -= cost;
+  model.trained++;
+  model.level++;
+  model.iq = Math.min(1000, model.iq + 50 * G.stats.trainingPower);
+  model.quality = Math.min(100, (model.quality || 0) + 15);
+  model.accuracy = Math.min(100, (model.accuracy || 0) + 12);
+  addXP(80);
+  G.stats.productBonus += 0.05;
+  recalcIncome();
+  
+  if (G.missionType === 'train' && !G.missionDone) {
+    G.missionDone = true;
+    document.getElementById('claim-mission-btn').disabled = false;
+  }
+  
+  showNotif(`🧠 Modelo ${type.toUpperCase()} treinado! Nível ${model.level}`, 'success');
+  checkAchievements();
+  renderAI();
+}
+
+// ===========================
+// STAFF
+// ===========================
+function hireStaff(id) {
+  const emp = STAFF_DATA.find(x => x.id === id);
+  if (!emp) return;
+  if (G.staff.includes(id)) { showNotif('Já contratado!', 'info'); return; }
+  if (G.staff.length >= G.stats.maxStaff) { showNotif('Escritório cheio! Expanda a sede.', 'error'); return; }
+  const hireCost = emp.salary * 3;
+  if (G.money < hireCost) { showNotif(`Custo de contratação: $${fmtNum(hireCost)}`, 'error'); return; }
+  G.money -= hireCost;
+  G.staff.push(id);
+  if (emp.bonus.research) G.stats.researchSpeed += emp.bonus.research;
+  recalcIncome();
+  addXP(50);
+  showNotif(`👥 ${emp.name} contratado!`, 'success');
+  checkAchievements();
+  renderOffice();
+}
+
+function fireStaff(id) {
+  const emp = STAFF_DATA.find(x => x.id === id);
+  if (!emp) return;
+  G.staff = G.staff.filter(x => x !== id);
+  if (emp.bonus.research) G.stats.researchSpeed -= emp.bonus.research;
+  recalcIncome();
+  showNotif(`👤 ${emp.name} dispensado.`, 'warning');
+  renderOffice();
+}
+
+// ===========================
+// OFFICE
+// ===========================
+function upgradeOffice() {
+  const next = OFFICES[G.stats.officeLevel + 1];
+  if (!next) { showNotif('Sede já no nível máximo!', 'info'); return; }
+  if (G.money < next.cost) { showNotif(`Precisa de $${fmtNum(next.cost)}`, 'error'); return; }
+  G.money -= next.cost;
+  G.stats.officeLevel++;
+  G.stats.maxStaff = OFFICES[G.stats.officeLevel].cap;
+  addXP(200);
+  showNotif(`🏢 ${next.name} desbloqueado!`, 'success');
+  renderOffice();
+}
+
+// ===========================
+// UPGRADES
+// ===========================
+function buyUpgrade(id) {
+  const upg = UPGRADES_DATA.find(x => x.id === id);
+  if (!upg || upg.owned) return;
+  const reqs = upg.req.filter(r => !G.upgrades.includes(r));
+  if (reqs.length > 0) { showNotif('Requisito não atendido!', 'error'); return; }
+  if (G.money < upg.cost) { showNotif(`Precisa de $${fmtNum(upg.cost)}`, 'error'); return; }
+  G.money -= upg.cost;
+  upg.owned = true;
+  G.upgrades.push(id);
+  if (upg.effect === 'training_2x') G.stats.trainingPower *= 2;
+  if (upg.effect === 'training_3x') G.stats.trainingPower *= 3;
+  if (upg.effect === 'research_6x') G.stats.researchSpeed *= 6;
+  recalcIncome();
+  addXP(150);
+  showNotif(`✅ ${upg.name} adquirido!`, 'success');
+  renderOffice();
+}
+
+// ===========================
+// MISSIONS
+// ===========================
+function claimMission() {
+  if (!G.missionDone || G.missionClaimed) return;
+  G.missionClaimed = true;
+  G.money += 5000;
+  addXP(200);
+  showNotif('🎯 Missão concluída! +$5,000', 'success');
+  document.getElementById('claim-mission-btn').disabled = true;
+  setTimeout(() => newMission(), 3000);
+}
+
+function newMission() {
+  const missions = [
+    { type: 'product', desc: 'Lance um novo produto de IA para ganhar $5,000!', goal: 1 },
+    { type: 'train', desc: 'Treine um modelo de IA para ganhar $5,000!', goal: 1 },
+    { type: 'research', desc: 'Complete uma pesquisa para ganhar $8,000!', goal: 1 },
+  ];
+  const m = missions[Math.floor(Math.random() * missions.length)];
+  G.missionType = m.type;
+  G.missionDone = false;
+  G.missionClaimed = false;
+  document.getElementById('daily-mission-desc').textContent = m.desc;
+  document.getElementById('mission-bar').style.width = '0%';
+  document.getElementById('claim-mission-btn').disabled = true;
+}
+
+// ===========================
+// PRESTIGE
+// ===========================
+function tryPrestige() {
+  if (G.level < 10 || G.money < 1000000) {
+    showNotif('Requer nível 10 e $1,000,000!', 'error');
+    return;
+  }
+  G.prestige++;
+  G.prestigeBonus += 0.5;
+  ACHIEVEMENTS.find(a => a.id === 'prestige_1').done = true;
+  const savedName = G.companyName;
+  const savedFounder = G.founder;
+  const savedPrestige = G.prestige;
+  const savedBonus = G.prestigeBonus;
+  // Reset
+  G.money = 50000;
+  G.rep = 0;
+  G.xp = 0;
+  G.level = 1;
+  G.xpNeeded = 100;
+  G.income = 0;
+  G.totalRevenue = 0;
+  G.research = { active: null, progress: 0, done: [] };
+  G.staff = [];
+  G.products = [];
+  G.upgrades = [];
+  G.aiModels = { chat: { level: 1, iq: 42, trained: 0 }, image: { level: 0, quality: 0, trained: 0 }, voice: { level: 0, accuracy: 0, trained: 0 } };
+  G.stats = { trainingPower: 1, researchSpeed: 1, productBonus: 1, maxStaff: 3, officeLevel: 0 };
+  G.companyName = savedName;
+  G.founder = savedFounder;
+  G.prestige = savedPrestige;
+  G.prestigeBonus = savedBonus;
+  UPGRADES_DATA.forEach(u => u.owned = false);
+  showNotif(`✨ Prestígio ${G.prestige}! Bônus permanente: +${(G.prestigeBonus - 1) * 100}%`, 'success');
+  renderAll();
+}
+
+// ===========================
+// ACHIEVEMENTS
+// ===========================
+function checkAchievements() {
+  const ach = ACHIEVEMENTS;
+  if (!ach.find(a=>a.id==='first_product').done && G.products.length >= 1) unlockAch('first_product');
+  if (!ach.find(a=>a.id==='first_staff').done && G.staff.length >= 1) unlockAch('first_staff');
+  if (!ach.find(a=>a.id==='millionaire').done && G.money >= 1000000) unlockAch('millionaire');
+  if (!ach.find(a=>a.id==='train_model').done && G.aiModels.chat.trained >= 1) unlockAch('train_model');
+  if (!ach.find(a=>a.id==='five_products').done && G.products.length >= 5) unlockAch('five_products');
+  if (!ach.find(a=>a.id==='agi_unlock').done && G.research.done.includes('agi_research')) unlockAch('agi_unlock');
+  if (!ach.find(a=>a.id==='level_5').done && G.level >= 5) unlockAch('level_5');
+  if (!ach.find(a=>a.id==='level_10').done && G.level >= 10) unlockAch('level_10');
+  if (!ach.find(a=>a.id==='generate_images').done && G.generatedImages >= 10) unlockAch('generate_images');
+  if (!ach.find(a=>a.id==='chat_100').done && G.chatMessages >= 100) unlockAch('chat_100');
+  if (!ach.find(a=>a.id==='full_staff').done && G.staff.length >= 5) unlockAch('full_staff');
+}
+
+function unlockAch(id) {
+  const a = ACHIEVEMENTS.find(x => x.id === id);
+  if (!a || a.done) return;
+  a.done = true;
+  G.money += a.reward;
+  addXP(100);
+  showNotif(`🏆 Conquista: ${a.name}! +$${fmtNum(a.reward)}`, 'success');
+}
+
+// ===========================
+// XP & LEVELS
+// ===========================
+function addXP(amount) {
+  G.xp += amount;
+  while (G.xp >= G.xpNeeded) {
+    G.xp -= G.xpNeeded;
+    G.level++;
+    G.xpNeeded = Math.floor(G.xpNeeded * 1.5);
+    showNotif(`⭐ Nível ${G.level} alcançado!`, 'success');
+  }
+}
+
+// ===========================
+// EVENTS
+// ===========================
+function showEvent() {
+  const ev = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+  currentEvent = ev;
+  document.getElementById('event-emoji').textContent = ev.emoji;
+  document.getElementById('event-title').textContent = ev.title;
+  document.getElementById('event-body').textContent = ev.body;
+  document.getElementById('event-accept').textContent = ev.acceptLabel;
+  if (ev.declineLabel) {
+    document.getElementById('event-decline').style.display = '';
+    document.getElementById('event-decline').textContent = ev.declineLabel;
+  } else {
+    document.getElementById('event-decline').style.display = 'none';
+  }
+  document.getElementById('event-modal').classList.add('show');
+}
+
+function acceptEvent() {
+  if (currentEvent && currentEvent.accept) currentEvent.accept();
+  closeEvent();
+}
+
+function closeEvent() {
+  document.getElementById('event-modal').classList.remove('show');
+  currentEvent = null;
+  setTimeout(() => { if (Math.random() < 0.2) showEvent(); }, 120000);
+}
+
+// ===========================
+// CHAT
+// ===========================
+function sendChatMsg() {
+  const inp = document.getElementById('chat-input');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  inp.value = '';
+  G.chatMessages++;
+  addChatMsg(msg, 'user');
+  addChatMsg('...', 'ai typing');
+  setTimeout(() => {
+    const msgs = document.querySelectorAll('.msg.typing');
+    msgs.forEach(m => m.remove());
+    const iq = G.aiModels.chat.iq;
+    let pool = iq < 150 ? CHAT_RESPONSES.low : iq < 500 ? CHAT_RESPONSES.mid : CHAT_RESPONSES.high;
+    addChatMsg(pool[Math.floor(Math.random() * pool.length)], 'ai');
+    G.money += 5;
+  }, 1000 + Math.random() * 1000);
+}
+
+function addChatMsg(text, cls) {
+  const wrap = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + cls;
+  div.textContent = text;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement === document.getElementById('chat-input')) sendChatMsg();
+});
+
+// ===========================
+// IMAGE GEN
+// ===========================
+function setImgStyle(el, icon, name) {
+  document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  G.imgStyle = { icon, name };
+}
+
+function generateImage() {
+  if (G.money < 500) { showNotif('Sem fundos! Precisa de $500', 'error'); return; }
+  G.money -= 500;
+  G.generatedImages++;
+  const preview = document.getElementById('imggen-display');
+  const label = document.getElementById('imggen-label');
+  preview.style.animation = 'none';
+  preview.textContent = '⏳';
+  label.textContent = 'Gerando...';
+  const styleIndex = ['🌆','🌸','🏔️','🎭','👾','🚀'].indexOf(G.imgStyle.icon);
+  const pool = IMG_RESPONSES[styleIndex >= 0 ? styleIndex : 0];
+  setTimeout(() => {
+    const emoji = pool[Math.floor(Math.random() * pool.length)];
+    preview.textContent = emoji;
+    preview.style.animation = 'float 3s ease-in-out infinite';
+    label.textContent = `✅ ${G.imgStyle.name} gerado! (${G.generatedImages} total)`;
+    showNotif('🎨 Imagem gerada com sucesso!', 'success');
+    addXP(20);
+    if (G.generatedImages >= 10) checkAchievements();
+  }, 1500);
+}
+
+// ===========================
+// NOTIFICATIONS
+// ===========================
+function showNotif(msg, type = 'info') {
+  const icons = { success: '✅', warning: '⚠️', error: '❌', info: 'ℹ️' };
+  const wrap = document.getElementById('notif');
+  const div = document.createElement('div');
+  div.className = `notif-item ${type}`;
+  div.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
+  wrap.appendChild(div);
+  setTimeout(() => { div.style.animation = 'slideOut 0.3s forwards'; setTimeout(() => div.remove(), 300); }, 3500);
+}
+
+function showFloatingIncome(amount) {
+  const el = document.createElement('div');
+  el.className = 'float-income';
+  el.textContent = `+$${fmtNum(amount)}`;
+  el.style.left = (30 + Math.random() * 40) + '%';
+  el.style.top = '50%';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1500);
+}
+
+// ===========================
+// UI HELPERS
+// ===========================
+function fmtNum(n) {
+  if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+  return Math.floor(n).toString();
+}
+
+function fmtMoney(n) { return '$' + fmtNum(n); }
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + tab)?.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const tabMap = { dashboard: 0, research: 1, products: 2, ai: 3, office: 4, market: 5 };
+  const navBtns = document.querySelectorAll('.nav-btn');
+  if (tabMap[tab] !== undefined) navBtns[tabMap[tab]]?.classList.add('active');
+
+  // Handle extra tabs
+  if (tab === 'achievements') {
+    document.getElementById('screen-achievements').classList.add('active');
+    renderAchievements();
+  }
+  if (tab === 'market') renderMarket();
+}
+
+function updateUI() {
+  document.getElementById('money-display').textContent = fmtMoney(G.money);
+  document.getElementById('rep-display').textContent = fmtNum(G.rep);
+  document.getElementById('level-display').textContent = G.level;
+  document.getElementById('inc-display').textContent = fmtNum(G.income);
+  document.getElementById('xp-label').textContent = `${Math.floor(G.xp)}/${G.xpNeeded}`;
+  document.getElementById('xp-bar').style.width = `${(G.xp / G.xpNeeded) * 100}%`;
+  document.getElementById('global-rank').textContent = G.globalRank;
+  document.getElementById('dash-products').textContent = G.products.length;
+  document.getElementById('dash-revenue').textContent = fmtMoney(G.totalRevenue);
+  document.getElementById('dash-models').textContent = G.aiModels.chat.trained + G.aiModels.image.trained + G.aiModels.voice.trained;
+  const totalUsers = G.products.reduce((s, pid) => { const p = PRODUCTS_DATA.find(x => x.id === pid); return s + (p ? p.users : 0); }, 0);
+  document.getElementById('dash-users').textContent = fmtNum(totalUsers / 1e6);
+
+  // Tier
+  const tiers = [{v:0,l:'STARTUP'},{v:50000,l:'PEQUENA EMPRESA'},{v:200000,l:'EMPRESA MÉDIA'},{v:1000000,l:'GRANDE EMPRESA'},{v:5000000,l:'CORPORAÇÃO'},{v:50000000,l:'GIGANTE TECH'}];
+  const tier = tiers.slice().reverse().find(t => G.totalRevenue >= t.v);
+  document.getElementById('tier-display').textContent = tier.l;
+
+  // HQ building
+  const hqs = ['🏠','🏪','🏢','🏬','🏙️','🌆'];
+  document.getElementById('hq-emoji').textContent = hqs[G.stats.officeLevel];
+
+  // Research active card
+  const activeCard = document.getElementById('active-research-card');
+  if (G.research.active) {
+    const r = RESEARCH_TREE.find(x => x.id === G.research.active);
+    activeCard.style.display = '';
+    document.getElementById('active-research-icon').textContent = r.icon;
+    document.getElementById('active-research-name').textContent = r.name;
+    const pct = Math.min(100, (G.research.progress / r.time) * 100);
+    document.getElementById('active-research-bar').style.width = pct + '%';
+    document.getElementById('active-research-pct').textContent = Math.floor(pct) + '%';
+    const rem = Math.max(0, Math.ceil((r.time - G.research.progress) / G.stats.researchSpeed));
+    document.getElementById('active-research-time').textContent = rem + 's';
+    document.getElementById('research-badge').style.display = '';
+  } else {
+    activeCard.style.display = 'none';
+    document.getElementById('research-badge').style.display = 'none';
+  }
+
+  // Chat model info
+  document.getElementById('chat-model-name').textContent = G.companyName.split(' ')[0] + '-' + G.aiModels.chat.level;
+  document.getElementById('chat-model-ver').textContent = G.aiModels.chat.level + '.0';
+  document.getElementById('chat-iq').textContent = 'IQ: ' + G.aiModels.chat.iq;
+  document.getElementById('model-iq-bar').style.width = Math.min(100, G.aiModels.chat.iq / 10) + '%';
+
+  // Revenue chart
+  renderChart();
+
+  // Achievements count
+  const doneCount = ACHIEVEMENTS.filter(a => a.done).length;
+  document.getElementById('ach-count').textContent = doneCount;
+
+  // Staff
+  document.getElementById('staff-count').textContent = G.staff.length;
+  const monthlyCost = G.staff.reduce((s, id) => { const e = STAFF_DATA.find(x => x.id === id); return s + (e ? e.salary : 0); }, 0);
+  document.getElementById('monthly-costs').textContent = fmtMoney(monthlyCost);
+}
+
+function renderAll() {
+  renderResearch();
+  renderProducts();
+  renderAI();
+  renderOffice();
+  renderMarket();
+  renderDashboard();
+  renderChart();
+}
+
+function renderDashboard() {
+  // Rivals preview
+  const rp = document.getElementById('rivals-preview');
+  rp.innerHTML = RIVALS.slice(0,2).map(r => `
+    <div class="rival-card">
+      <div class="rival-logo" style="background:${r.color}22;">${r.icon}</div>
+      <div class="rival-info">
+        <div class="rival-name">${r.name}</div>
+        <div class="rival-worth">${fmtMoney(r.worth)}</div>
+        <div class="rival-bar"><div class="rival-bar-fill" style="width:${r.power}%;background:${r.color};"></div></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);">${r.power}%</div>
+    </div>
+  `).join('');
+}
+
+function renderChart() {
+  const bars = document.getElementById('revenue-chart');
+  const labels = document.getElementById('chart-labels');
+  if (!bars) return;
+  const days = ['D-6','D-5','D-4','D-3','D-2','D-1','HOJE'];
+  const maxV = Math.max(...G.revenueHistory, 1);
+  bars.innerHTML = G.revenueHistory.map((v, i) => {
+    const h = Math.max(4, (v / maxV) * 70);
+    const colors = ['#1e3a5f','#1e3a5f','#1e4060','#1a4a7a','#0e6b8f','#0891b2','#00d4ff'];
+    return `<div class="chart-bar" style="height:${h}px;background:${colors[i]};"></div>`;
+  }).join('');
+  labels.innerHTML = days.map(d => `<div class="chart-label">${d}</div>`).join('');
+}
+
+function renderResearch() {
+  const grid = document.getElementById('research-grid');
+  grid.innerHTML = RESEARCH_TREE.map(r => {
+    const done = G.research.done.includes(r.id);
+    const active = G.research.active === r.id;
+    const reqs = r.req.filter(rq => !G.research.done.includes(rq));
+    const canAfford = G.money >= r.cost;
+    const locked = reqs.length > 0;
+    let status = '';
+    if (done) status = '<span class="research-badge done">✓ COMPLETO</span>';
+    else if (active) status = '<span class="research-badge wip">⚡ EM ANDAMENTO</span>';
+    return `
+      <div class="research-card ${done?'unlocked':''} ${active?'active-research':''} ${locked?'':''}">
+        ${status}
+        <span class="research-icon">${r.icon}</span>
+        <div class="research-name">${r.name}</div>
+        <div class="research-desc">${r.desc}</div>
+        <div class="research-cost">💰 ${fmtMoney(r.cost)}</div>
+        ${!done && !active ? `<button class="btn ${locked?'btn-ghost':'btn-primary'} btn-sm" ${locked||!canAfford?'disabled':''} onclick="startResearch('${r.id}')">${locked?'🔒 BLOQUEADO':canAfford?'🔬 PESQUISAR':'💸 SEM FUNDOS'}</button>` : ''}
+        ${active ? `<div style="font-size:10px;color:var(--accent);text-align:center;">Pesquisando...</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderProducts() {
+  const list = document.getElementById('products-list');
+  const locked = document.getElementById('locked-products-list');
+  const active = PRODUCTS_DATA.filter(p => G.products.includes(p.id));
+  const available = PRODUCTS_DATA.filter(p => !G.products.includes(p.id));
+  
+  list.innerHTML = active.length ? active.map(p => `
+    <div class="product-card">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent3),#059669);"></div>
+      <div class="product-header">
+        <div class="product-icon-wrap" style="background:${p.bg};">${p.icon}</div>
+        <div class="product-info">
+          <div class="product-name">${p.name}</div>
+          <div class="product-type">${p.type}</div>
+          <div class="product-revenue">+${fmtMoney(p.baseIncome)}/s</div>
+        </div>
+      </div>
+      <div class="product-stats">
+        <div class="p-stat"><div class="v" style="color:var(--accent);">${fmtNum(p.users)}</div><div class="l">USUÁRIOS</div></div>
+        <div class="p-stat"><div class="v" style="color:var(--accent3);">${fmtMoney(p.baseIncome * 3600)}</div><div class="l">/HORA</div></div>
+        <div class="p-stat"><div class="v" style="color:var(--accent4);">★${Math.min(5,(Math.random()*1+4)).toFixed(1)}</div><div class="l">RATING</div></div>
+      </div>
+      <button class="btn btn-success" onclick="upgradeProduct('${p.id}')">⬆️ MELHORAR (${fmtMoney(p.baseIncome*100)})</button>
+    </div>
+  `).join('') : '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">Nenhum produto ativo ainda. Lance um produto abaixo!</div>';
+
+  locked.innerHTML = available.map(p => {
+    const hasRes = G.research.done.includes(p.req);
+    return `
+      <div class="product-card" style="${hasRes?'':'opacity:0.6'}">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${hasRes?'linear-gradient(90deg,var(--accent),#0891b2)':'linear-gradient(90deg,var(--text3),#4a5568)'};"></div>
+        <div class="product-header">
+          <div class="product-icon-wrap" style="background:${p.bg};">${p.icon}</div>
+          <div class="product-info">
+            <div class="product-name">${p.name}</div>
+            <div class="product-type">${p.type} · +${fmtMoney(p.baseIncome)}/s</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px;">${p.desc}</div>
+          </div>
+        </div>
+        <button class="btn ${hasRes?'btn-primary':'btn-ghost'}" ${!hasRes?'disabled':''} onclick="launchProduct('${p.id}')">${hasRes?'🚀 LANÇAR':'🔒 Requer pesquisa: '+RESEARCH_TREE.find(r=>r.id===p.req)?.name}</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderAI() {
+  const list = document.getElementById('models-list');
+  const models = [
+    { key: 'chat', name: 'Modelo de Chat', icon: '💬', metric: 'IQ: ' + G.aiModels.chat.iq, progress: Math.min(100, G.aiModels.chat.iq / 10), color: 'cyan', cost: 3000 * (G.aiModels.chat.level + 1), lv: G.aiModels.chat.level },
+    { key: 'image', name: 'Modelo de Imagem', icon: '🎨', metric: 'Qualidade: ' + G.aiModels.image.quality + '%', progress: G.aiModels.image.quality, color: 'purple', cost: 5000 * (G.aiModels.image.level + 1), lv: G.aiModels.image.level, req: 'img_gen' },
+    { key: 'voice', name: 'Modelo de Voz', icon: '🎙️', metric: 'Precisão: ' + G.aiModels.voice.accuracy + '%', progress: G.aiModels.voice.accuracy, color: 'green', cost: 4000 * (G.aiModels.voice.level + 1), lv: G.aiModels.voice.level, req: 'voice_ai' },
+  ];
+
+  list.innerHTML = models.map(m => {
+    const hasReq = !m.req || G.research.done.includes(m.req);
+    const colors = { cyan: 'var(--accent)', purple: 'var(--accent2)', green: 'var(--accent3)' };
+    return `
+      <div class="model-card">
+        <div class="model-header">
+          <div class="model-orb ${m.color}" style="background:${colors[m.color]}22;">${m.icon}</div>
+          <div>
+            <div class="model-name">${m.name}</div>
+            <div class="model-version">${G.companyName.split(' ')[0]}-${m.key.toUpperCase()} v${m.lv}.0</div>
+          </div>
+        </div>
+        <div class="model-params">
+          <div class="param-box"><div class="param-val" style="color:${colors[m.color]};">${m.lv}</div><div class="param-lbl">NÍVEL</div></div>
+          <div class="param-box"><div class="param-val" style="color:${colors[m.color]};font-size:11px;">${m.metric}</div><div class="param-lbl">STATUS</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>Capacidade</span><span>${Math.floor(m.progress)}%</span></div>
+          <div class="prog-track"><div class="prog-fill ${m.color}" style="width:${m.progress}%"></div></div>
+        </div>
+        <button class="btn btn-${m.color==='cyan'?'primary':m.color==='purple'?'secondary':'success'}" ${!hasReq?'disabled':''} onclick="trainModel('${m.key}')">
+          ${hasReq ? `🧠 TREINAR (${fmtMoney(m.cost)})` : '🔒 ' + (m.req ? RESEARCH_TREE.find(r=>r.id===m.req)?.name : '')}
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderOffice() {
+  // Office
+  const office = OFFICES[G.stats.officeLevel];
+  const nextOffice = OFFICES[G.stats.officeLevel + 1];
+  document.getElementById('office-icon').textContent = office.icon;
+  document.getElementById('office-name').textContent = office.name;
+  document.getElementById('office-desc').textContent = office.desc;
+  const offBtn = document.getElementById('upgrade-office-btn');
+  if (nextOffice) {
+    offBtn.textContent = `⬆️ ${nextOffice.name} (${fmtMoney(nextOffice.cost)})`;
+    offBtn.disabled = G.money < nextOffice.cost;
+  } else {
+    offBtn.textContent = '✅ Sede no nível máximo';
+    offBtn.disabled = true;
+  }
+
+  // Staff slots
+  const staffList = document.getElementById('staff-list');
+  const slots = Array.from({length: G.stats.maxStaff}, (_, i) => {
+    const staffId = G.staff[i];
+    if (staffId) {
+      const emp = STAFF_DATA.find(x => x.id === staffId);
+      return `
+        <div class="staff-slot">
+          <div class="staff-avatar">${emp.icon}</div>
+          <div class="staff-info">
+            <div class="staff-name">${emp.name}</div>
+            <div class="staff-role">${emp.role}</div>
+            <div class="staff-skill">${Object.entries(emp.bonus).map(([k,v]) => `+${Math.round(v*100)}% ${k}`).join(' · ')}</div>
+          </div>
+          <div>
+            <div class="staff-salary">-${fmtMoney(emp.salary)}/m</div>
+            <button class="btn btn-danger btn-sm" style="margin-top:6px;width:auto;" onclick="fireStaff('${emp.id}')">DEMITIR</button>
+          </div>
+        </div>
+      `;
+    } else {
+      return `<div class="staff-slot staff-empty"><div style="font-size:24px;color:var(--text3);">+</div><div style="font-size:11px;color:var(--text3);margin-left:8px;">Vaga disponível</div></div>`;
+    }
+  });
+  staffList.innerHTML = slots.join('');
+
+  // Hire list
+  const hireList = document.getElementById('hire-list');
+  const available = STAFF_DATA.filter(s => !G.staff.includes(s.id));
+  hireList.innerHTML = available.map(emp => `
+    <div class="staff-slot">
+      <div class="staff-avatar" style="border-color:var(--accent2);">${emp.icon}</div>
+      <div class="staff-info">
+        <div class="staff-name">${emp.name}</div>
+        <div class="staff-role">${emp.role}</div>
+        <div class="staff-skill">${Object.entries(emp.bonus).map(([k,v]) => `+${Math.round(v*100)}% ${k}`).join(' · ')}</div>
+      </div>
+      <div>
+        <div class="staff-salary" style="color:var(--accent4);">${fmtMoney(emp.salary*3)}</div>
+        <div style="font-size:9px;color:var(--text3);text-align:right;margin-top:2px;">-${fmtMoney(emp.salary)}/mês</div>
+        <button class="btn btn-secondary btn-sm" style="margin-top:6px;width:auto;" onclick="hireStaff('${emp.id}')">CONTRATAR</button>
+      </div>
+    </div>
+  `).join('');
+
+  // Upgrades
+  const upgradeList = document.getElementById('upgrade-list');
+  upgradeList.innerHTML = UPGRADES_DATA.map(upg => {
+    const locked = upg.req.some(r => !G.upgrades.includes(r));
+    return `
+      <div class="upgrade-item ${upg.owned?'owned':''} ${locked?'locked':''}">
+        <span class="upg-icon">${upg.icon}</span>
+        <div class="upg-info">
+          <div class="upg-name">${upg.name}</div>
+          <div class="upg-desc">${upg.desc}</div>
+        </div>
+        ${upg.owned ? '<span class="upg-check">✓</span>' : `<span class="upg-price">${fmtMoney(upg.cost)}</span>`}
+      </div>
+    `;
+  }).join('');
+  document.getElementById('upgrade-list').querySelectorAll('.upgrade-item:not(.owned):not(.locked)').forEach((el, i) => {
+    const upg = UPGRADES_DATA.filter(u => !u.owned && !u.req.some(r => !G.upgrades.includes(r)))[i];
+    if (upg) el.onclick = () => buyUpgrade(upg.id);
+  });
+}
+
+function renderMarket() {
+  // Market share
+  const ms = document.getElementById('market-share-display');
+  if (!ms) return;
+  const myShare = Math.min(80, Math.max(1, G.totalRevenue / 10000));
+  ms.innerHTML = `
+    <div style="margin-bottom:8px;">
+      <div class="prog-label"><span style="color:var(--accent);">${G.companyName}</span><span>${myShare.toFixed(1)}%</span></div>
+      <div class="prog-track"><div class="prog-fill cyan" style="width:${myShare}%"></div></div>
+    </div>
+    ${RIVALS.map(r => `
+      <div style="margin-bottom:8px;">
+        <div class="prog-label"><span style="color:${r.color};">${r.name}</span><span>${r.power.toFixed(1)}%</span></div>
+        <div class="prog-track"><div class="prog-fill" style="width:${r.power}%;background:${r.color};"></div></div>
+      </div>
+    `).join('')}
+  `;
+
+  // Rivals
+  const rv = document.getElementById('rivals-full');
+  if (rv) rv.innerHTML = RIVALS.map(r => `
+    <div class="rival-card">
+      <div class="rival-logo" style="background:${r.color}22;">${r.icon}</div>
+      <div class="rival-info" style="flex:1;">
+        <div class="rival-name">${r.name}</div>
+        <div class="rival-worth">${fmtMoney(r.worth)}</div>
+        <div class="rival-bar"><div class="rival-bar-fill" style="width:${r.power}%;background:${r.color};"></div></div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:var(--text3);">Poder</div>
+        <div style="font-family:'Orbitron',monospace;font-size:12px;color:${r.color};">${r.power.toFixed(0)}%</div>
+      </div>
+    </div>
+  `).join('');
+
+  // News
+  const nl = document.getElementById('news-list');
+  if (nl) nl.innerHTML = NEWS_ITEMS.map(n => `
+    <div class="news-item">
+      <span class="news-icon">${n.icon}</span>
+      <div>
+        <div class="news-title">${n.title}</div>
+        <div class="news-body">${n.body}</div>
+        <div class="news-time">${n.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderAchievements() {
+  const list = document.getElementById('achievements-list');
+  if (!list) return;
+  list.innerHTML = ACHIEVEMENTS.map(a => `
+    <div class="achievement ${a.done?'':'locked'}">
+      <span class="ach-icon">${a.icon}</span>
+      <div class="ach-info">
+        <div class="ach-name">${a.name}</div>
+        <div class="ach-desc">${a.desc}</div>
+        <div class="ach-reward">${a.done ? '✅ Concluído!' : '🎁 Recompensa: ' + fmtMoney(a.reward)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===========================
+// BOOT SEQUENCE
+// ===========================
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('name-modal').style.display = 'flex';
+  }, 2200);
+});
+</script>
+</body>
+</html>
